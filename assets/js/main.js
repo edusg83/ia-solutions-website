@@ -444,6 +444,33 @@ function initChatbot() {
     // Close chatbot
     chatbotClose.addEventListener('click', closeChatbot);
     
+    // Close chatbot with back button on mobile
+    if (window.innerWidth <= 768) {
+        window.addEventListener('popstate', (e) => {
+            if (chatbotWindow.classList.contains('active')) {
+                closeChatbot();
+                e.preventDefault();
+            }
+        });
+    }
+    
+    // Handle viewport changes (keyboard on mobile)
+    if (window.innerWidth <= 768) {
+        let initialViewportHeight = window.innerHeight;
+        
+        window.addEventListener('resize', () => {
+            // Adjust chatbot height when keyboard appears
+            const currentHeight = window.innerHeight;
+            const heightDiff = initialViewportHeight - currentHeight;
+            
+            if (heightDiff > 150) { // Keyboard is likely open
+                chatbotWindow.style.height = currentHeight + 'px';
+            } else {
+                chatbotWindow.style.height = '100%';
+            }
+        });
+    }
+    
     // Handle form submission
     chatbotForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -472,7 +499,15 @@ function initChatbot() {
         chatbotWindow.classList.add('active');
         chatbotToggle.classList.add('active');
         chatbotToggle.innerHTML = '<i class="bi bi-x"></i>';
-        chatbotInput.focus();
+        
+        // Prevent body scroll on mobile when chatbot is open
+        if (window.innerWidth <= 768) {
+            document.body.style.overflow = 'hidden';
+            // Delay focus on mobile to prevent issues with keyboard
+            setTimeout(() => chatbotInput.focus(), 300);
+        } else {
+            chatbotInput.focus();
+        }
         
         // Scroll to bottom
         scrollToBottom();
@@ -482,6 +517,9 @@ function initChatbot() {
         chatbotWindow.classList.remove('active');
         chatbotToggle.classList.remove('active');
         chatbotToggle.innerHTML = '<i class="bi bi-chat-dots"></i>';
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
     }
     
     function addMessage(message, isUser = false, isError = false) {

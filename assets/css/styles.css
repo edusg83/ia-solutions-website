@@ -1251,37 +1251,151 @@ section {
 /* Mobile responsive */
 @media (max-width: 768px) {
     .chatbot-container {
-        bottom: 15px;
-        right: 15px;
-    }
-    
-    .chatbot-window {
-        width: calc(100vw - 30px);
-        max-width: none;
-        height: min(70vh, 450px);
-        right: -15px;
-        bottom: 70px;
-    }
-    
-    .chatbot-header {
-        padding: 14px 16px;
-        min-height: 55px;
-    }
-    
-    .chatbot-header h4 {
-        font-size: 16px;
-    }
-    
-    .chatbot-close {
-        width: 30px;
-        height: 30px;
-        font-size: 20px;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        top: 0;
+        z-index: 9999;
+        pointer-events: none;
     }
     
     .chatbot-toggle {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        pointer-events: all;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .chatbot-window {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+        width: 100%;
+        max-width: none;
+        height: 100%;
+        max-height: none;
+        border-radius: 0;
+        pointer-events: all;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .chatbot-window.active {
+        transform: translateY(0);
+    }
+    
+    .chatbot-header {
+        padding: 20px 20px 15px 20px;
+        min-height: 70px;
+        background: var(--gradient-primary);
+        position: relative;
+        padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
+    }
+    
+    .chatbot-header h4 {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .chatbot-close {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+    }
+    
+    .chatbot-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .chatbot-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: var(--bg-light);
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .chatbot-message {
+        max-width: 85%;
+        padding: 14px 18px;
+        font-size: 16px;
+        border-radius: 20px;
+    }
+    
+    .chatbot-input-container {
+        padding: 15px 20px;
+        padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+        background: var(--bg-white);
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .chatbot-input-form {
+        gap: 12px;
+    }
+    
+    .chatbot-input {
+        font-size: 16px;
+        padding: 14px 18px;
+        border-radius: 25px;
+        min-height: 50px;
+    }
+    
+    .chatbot-send {
+        width: 50px;
+        height: 50px;
+        border-radius: 25px;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    
+    /* Prevent zoom on input focus on iOS */
+    .chatbot-input {
+        font-size: 16px !important;
+        transform: translateZ(0);
+    }
+    
+    /* Hide toggle when chatbot is active on mobile */
+    .chatbot-window.active ~ .chatbot-toggle {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+/* Tablet responsive (between mobile and desktop) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .chatbot-window {
+        width: min(400px, calc(100vw - 40px));
+        height: min(550px, calc(100vh - 140px));
+    }
+    
+    .chatbot-container {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+    .chatbot-toggle {
+        bottom: 15px;
+        right: 15px;
         width: 55px;
         height: 55px;
         font-size: 22px;
+    }
+    
+    .chatbot-header {
+        padding: 15px 15px 12px 15px;
+        min-height: 65px;
     }
     
     .chatbot-messages {
@@ -1290,5 +1404,24 @@ section {
     
     .chatbot-input-container {
         padding: 12px 15px;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .chatbot-header {
+        padding-top: 15px;
+        min-height: 60px;
+    }
+    
+    .chatbot-header h4 {
+        font-size: 16px;
+    }
+    
+    .chatbot-close {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
     }
 }
