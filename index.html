@@ -401,8 +401,8 @@
                         </div>
                         <div class="pricing-body">
                             <div class="price">
-                                <span class="currency">desde €</span>
-                                <span class="amount">100</span>
+                                <span class="currency">desde</span>
+                                <span class="amount">50 €</span>
                                 <span class="period">/mes</span>
                             </div>
                             <p class="text-center mb-3 fw-semibold text-primary">
@@ -624,6 +624,45 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="acceptLegalNotice()">He leído y acepto</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <button class="chatbot-toggle" id="chatbotToggle">
+            <i class="bi bi-chat-dots"></i>
+        </button>
+        
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h4>
+                    <i class="bi bi-robot me-2"></i>
+                    Asistente IA
+                </h4>
+                <button class="chatbot-close" id="chatbotClose">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="chatbot-message bot chatbot-welcome">
+                    ¡Hola! 👋 Soy tu asistente de IA. ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre nuestros servicios, precios, o cualquier duda sobre automatización con inteligencia artificial.
+                </div>
+            </div>
+            
+            <div class="chatbot-input-container">
+                <form class="chatbot-input-form" id="chatbotForm">
+                    <textarea 
+                        class="chatbot-input" 
+                        id="chatbotInput" 
+                        placeholder="Escribe tu mensaje..." 
+                        rows="1"
+                    ></textarea>
+                    <button type="submit" class="chatbot-send" id="chatbotSend">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </form>
             </div>
         </div>
     </div>

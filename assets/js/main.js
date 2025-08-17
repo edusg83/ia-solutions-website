@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initFormValidation();
     initAnimations();
     initScrollEffects();
+    initChatbot();
 });
 
 // Navigation functionality
@@ -203,40 +204,56 @@ function isValidPhone(phone) {
     return phoneRegex.test(cleanPhone);
 }
 
-function submitForm() {
+async function submitForm() {
     const form = document.getElementById('contactForm');
     const formData = new FormData(form);
     const formSuccess = document.getElementById('formSuccess');
     const submitBtn = form.querySelector('button[type="submit"]');
     
-    // Show loading state
+    // Mostrar estado "enviando"
     const originalBtnText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Enviando...';
     submitBtn.disabled = true;
-    
-    // Simulate form submission (replace with actual endpoint)
-    setTimeout(() => {
-        // Log form data (for development)
-        console.log('Form Data:', Object.fromEntries(formData));
-        
-        // Show success message
+
+    try {
+        // Convertir formData a objeto normal
+        const data = Object.fromEntries(formData);
+
+        // Enviar al webhook de n8n
+        const response = await fetch("https://nochon.smartbotics.eu/webhook/d51255e2-b1f5-43f2-8870-9969f1a37863", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al enviar los datos");
+        }
+
+        // Mostrar mensaje de éxito
         formSuccess.style.display = 'block';
         formSuccess.scrollIntoView({ behavior: 'smooth' });
-        
-        // Reset form
+
+        // Resetear formulario
         form.reset();
-        
-        // Reset button
-        submitBtn.innerHTML = originalBtnText;
-        submitBtn.disabled = false;
-        
-        // Hide success message after 10 seconds
+
+        // Ocultar mensaje de éxito después de 10s
         setTimeout(() => {
             formSuccess.style.display = 'none';
         }, 10000);
-        
-    }, 2000); // Simulate 2 second delay
+
+    } catch (error) {
+        console.error("Error en el envío:", error);
+        alert("Hubo un problema al enviar el formulario. Intenta de nuevo.");
+    } finally {
+        // Resetear botón
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    }
 }
+
 
 // Animation and scroll effects
 function initAnimations() {
@@ -396,4 +413,218 @@ function acceptLegalNotice() {
         checkbox.checked = true;
         clearFieldError(checkbox);
     }
+}
+
+// Chatbot functionality
+function initChatbot() {
+    const chatbotToggle = document.getElementById('chatbotToggle');
+    const chatbotWindow = document.getElementById('chatbotWindow');
+    const chatbotClose = document.getElementById('chatbotClose');
+    const chatbotForm = document.getElementById('chatbotForm');
+    const chatbotInput = document.getElementById('chatbotInput');
+    const chatbotMessages = document.getElementById('chatbotMessages');
+    const chatbotSend = document.getElementById('chatbotSend');
+    
+    if (!chatbotToggle || !chatbotWindow || !chatbotForm) return;
+    
+    // Generate unique session and conversation IDs based on current time and random values
+    const sessionId = 'session_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
+    const conversationId = 'automate_conv_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
+    
+    // Toggle chatbot window
+    chatbotToggle.addEventListener('click', () => {
+        const isActive = chatbotWindow.classList.contains('active');
+        if (isActive) {
+            closeChatbot();
+        } else {
+            openChatbot();
+        }
+    });
+    
+    // Close chatbot
+    chatbotClose.addEventListener('click', closeChatbot);
+    
+    // Handle form submission
+    chatbotForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        sendMessage();
+    });
+    
+    // Auto-resize textarea
+    chatbotInput.addEventListener('input', () => {
+        chatbotInput.style.height = 'auto';
+        chatbotInput.style.height = Math.min(chatbotInput.scrollHeight, 100) + 'px';
+        
+        // Enable/disable send button
+        const message = chatbotInput.value.trim();
+        chatbotSend.disabled = !message;
+    });
+    
+    // Handle Enter key (send message)
+    chatbotInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    function openChatbot() {
+        chatbotWindow.classList.add('active');
+        chatbotToggle.classList.add('active');
+        chatbotToggle.innerHTML = '<i class="bi bi-x"></i>';
+        chatbotInput.focus();
+        
+        // Scroll to bottom
+        scrollToBottom();
+    }
+    
+    function closeChatbot() {
+        chatbotWindow.classList.remove('active');
+        chatbotToggle.classList.remove('active');
+        chatbotToggle.innerHTML = '<i class="bi bi-chat-dots"></i>';
+    }
+    
+    function addMessage(message, isUser = false, isError = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chatbot-message ${isUser ? 'user' : 'bot'}${isError ? ' chatbot-error' : ''}`;
+        messageDiv.textContent = message;
+        
+        chatbotMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+    
+    function addTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'chatbot-message chatbot-typing';
+        typingDiv.innerHTML = `
+            <span>Escribiendo</span>
+            <div class="chatbot-typing-dots">
+                <div class="chatbot-typing-dot"></div>
+                <div class="chatbot-typing-dot"></div>
+                <div class="chatbot-typing-dot"></div>
+            </div>
+        `;
+        typingDiv.id = 'typingIndicator';
+        
+        chatbotMessages.appendChild(typingDiv);
+        scrollToBottom();
+        
+        return typingDiv;
+    }
+    
+    function removeTypingIndicator() {
+        const typingDiv = document.getElementById('typingIndicator');
+        if (typingDiv) {
+            typingDiv.remove();
+        }
+    }
+    
+    function scrollToBottom() {
+        setTimeout(() => {
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }, 100);
+    }
+    
+    async function sendMessage() {
+        const message = chatbotInput.value.trim();
+        if (!message) return;
+        
+        // Add user message to chat
+        addMessage(message, true);
+        
+        // Clear input
+        chatbotInput.value = '';
+        chatbotInput.style.height = 'auto';
+        chatbotSend.disabled = true;
+        
+        // Show typing indicator
+        const typingIndicator = addTypingIndicator();
+        
+        try {
+            // Prepare request data with real user values
+            const requestData = {
+                message: message,
+                conversationId: conversationId, // Unique for this conversation session
+                timestamp: new Date().toISOString(), // Current timestamp
+                userAgent: navigator.userAgent, // User's browser info
+                page: getCurrentPage(), // Current page/section they're viewing
+                sessionId: sessionId // Unique for this browser session
+            };
+            
+            // Send request to API
+            const response = await fetch('https://apilater-etb3crf5abffg2h2.westeurope-01.azurewebsites.net/api/automate-chatbot/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            });
+            
+            // Remove typing indicator
+            removeTypingIndicator();
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success && data.message) {
+                addMessage(data.message);
+            } else {
+                throw new Error(data.error || 'Error desconocido');
+            }
+            
+        } catch (error) {
+            console.error('Chatbot error:', error);
+            removeTypingIndicator();
+            
+            let errorMessage = 'Lo siento, ha ocurrido un error. ';
+            if (error.message.includes('Failed to fetch')) {
+                errorMessage += 'Por favor, verifica tu conexión a internet y inténtalo de nuevo.';
+            } else {
+                errorMessage += 'Inténtalo de nuevo en unos momentos.';
+            }
+            
+            addMessage(errorMessage, false, true);
+        }
+        
+        // Focus back to input
+        chatbotInput.focus();
+    }
+    
+    function getCurrentPage() {
+        // Get current page based on URL hash or scroll position
+        const hash = window.location.hash;
+        if (hash && hash.length > 1) {
+            return hash.substring(1); // Remove the #
+        }
+        
+        // If no hash, determine current section by scroll position
+        const sections = document.querySelectorAll('section[id]');
+        let currentSection = 'home';
+        
+        sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
+            if (rect.top <= 100 && rect.bottom >= 100) {
+                currentSection = section.getAttribute('id');
+            }
+        });
+        
+        return currentSection;
+    }
+    
+    // Initial setup
+    chatbotSend.disabled = true;
+    
+    // Auto-open chatbot after 5 seconds
+    setTimeout(() => {
+        if (!chatbotWindow.classList.contains('active')) {
+            openChatbot();
+            // Add a welcome message when auto-opening
+            setTimeout(() => {
+                addMessage('¡Hola! 👋 Soy tu asistente virtual. ¿En qué puedo ayudarte con la automatización de tu negocio?');
+            }, 500);
+        }
+    }, 5000);
 }
