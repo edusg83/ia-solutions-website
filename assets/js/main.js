@@ -621,10 +621,10 @@ function initChatbot() {
     setTimeout(() => {
         if (!chatbotWindow.classList.contains('active')) {
             openChatbot();
-            // Add a welcome message when auto-opening
+            // Add a welcome message when auto-opening (delay to ensure smooth animation)
             setTimeout(() => {
-                addMessage('¡Hola! 👋 Soy tu asistente virtual. ¿En qué puedo ayudarte con la automatización de tu negocio?');
-            }, 500);
+                addMessage('¡Hola! 👋 Soy tu asistente virtual especializado en automatización empresarial. ¿En qué puedo ayudarte a optimizar tu negocio?');
+            }, 800);
         }
     }, 5000);
 }
